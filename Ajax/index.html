@@ -12,20 +12,33 @@
 
 <body>
 
-    <h1>Ajax</h1>
+
+    <div id="box">
+
+    </div>
 
     <script>
+
+        $(document).ajaxStart(function () {
+            console.log("ajax started");
+        });
+
+        $(document).ajaxComplete(function () {
+            console.log("ajax completed");
+        });
 
         $(document).ready(function () {
 
             $.ajax({
-                url:"https://jsonplaceholder.typicode.com/comments",
-                type:"GET",
-                success:function (data) {
+                url: "https://jsonplaceholder.typicode.com/comments",
+                type: "GET",
+                success: function (data) {
                     console.table(data);
                 },
-                error:function (error) {}
+                error: function (error) { }
             })
+
+            $("#box").load("https://jsonplaceholder.typicode.com/comments");
         })
     </script>
 
