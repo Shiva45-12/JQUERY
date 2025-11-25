@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        .box{
+            width:200px;
+            height:100px;
+            background-color:black;
+            color: white;
+        }
+    </style>
+
+     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+     <script>
+        $(document).ready(function(){
+            $("button").click(function(){
+                let val1 = $("#t1").val();
+                $('#t2').val(val1);
+
+                // $('#para1').html(val1)
+
+                // $('#para1').append(val1)
+                // $('#para1').prepend(val1)
+
+                // $('#t2').removeAttr('type')
+                // $('#para1').removeClass('box')
+
+                // $('#para1').addClass('box')
+                $('#para1').toggleClass('box')
+
+
+            });
+        });
+     </script>
+
+
+
+</head>
+<body>
+    <input type="text" id="t1"><br><br>
+    <input type="date" id="t2"><br><br>
+    <button id="">Click Me</button>
+    <hr>
+
+    <p id="para1" >digicoder</p>
+</body>
+</html>

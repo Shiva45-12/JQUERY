@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User VS Computer Game</title>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <style>
+        table {
+            height: 450px;
+            width: 450px;
+            margin: 25px auto;
+        }
+
+        table tr td {
+            height: 150px;
+            width: 150px;
+            text-align: center;
+            font-size: 100px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        table,
+        tr,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+
+        h1,
+        h2 {
+            text-align: center;
+        }
+    </style>
+
+</head>
+
+<body>
+    <h1>Tic Tac Toe</h1>
+    <h2></h2>
+
+    <table>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </table>
+
+
+
+    <script>
+
+        $(document).ready(() => {
+
+
+
+            // var turn = 1; // 1 for X and 2 for O
+            var gameState = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+
+            var winState = [
+                [0, 1, 2],
+                [3, 4, 5],
+                [6, 7, 8],
+                [0, 3, 6],
+                [1, 4, 7],
+                [2, 5, 8],
+                [0, 4, 8],
+                [2, 4, 6]
+            ]
+            var mode = 1;
+
+            $("td").each(function (i, e) {
+
+                $(e).click(function () {
+
+                    //console.log(i);
+                    if (gameState[i] == 0 && mode == 1) {
+                        $(e).html("X");
+                        gameState[i] = 1
+
+
+                        if (!checkWinner()) {
+
+                            setTimeout(() => {
+                                computerMove();
+                            }, 500)
+
+                        }
+                    }
+
+
+
+
+                })
+            })
+
+            function checkWinner() {
+                var winner = 0;
+                for (var pos of winState) {
+                    if (gameState[pos[0]] == gameState[pos[1]] && gameState[pos[1]] == gameState[pos[2]] && gameState[pos[0]] != 0) {
+                        winner = gameState[pos[0]];
+                        mode = 0
+                        break;
+                    }
+                }
+
+                if (winner == 1) {
+                    $("h2").html("X Player WON");
+                    return true;
+                }
+                else if (winner == 2) {
+                    $("h2").html("O Player WON");
+                    return true;
+                }
+                else {
+                    if (!gameState.includes(0)) {
+                        $("h2").html("GAME DRAW!");
+                        return true;
+                    }
+                }
+
+                return false;
+
+            }
+
+
+
+            function computerMove() {
+                var blankSpots = []
+                for (var i = 0; i < gameState.length; i++) {
+                    if (gameState[i] == 0) {
+                        blankSpots.push(i);
+                    }
+                }
+                // console.log(blankSpots);
+
+                var spot = Math.floor(Math.random() * blankSpots.length);
+                var position = blankSpots[spot];
+                $('td').eq(position).html("O");
+                gameState[position] = 2;
+
+                checkWinner();
+
+            }
+        })
+    </script>
+
+</body>
+
+</html>

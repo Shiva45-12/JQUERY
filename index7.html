@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TIC_TAC_TOE</title>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #78f2fd 0%, #05ebfc 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 20px;
+      overflow: hidden;
+    }
+
+    .game-container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      max-width: 500px;
+      width: 100%;
+      position: relative;
+      z-index: 2;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: clamp(24px, 5vw, 36px);
+    }
+
+    .status {
+      font-size: clamp(16px, 4vw, 20px);
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #555;
+      min-height: 30px;
+    }
+
+    .hint {
+      background: #e3f2fd;
+      color: #1976d2;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: clamp(14px, 3vw, 16px);
+    }
+
+    table {
+      margin: 0 auto;
+      border-collapse: separate;
+      border-spacing: 5px;
+      background: #f5f5f5;
+      border-radius: 15px;
+      padding: 10px;
+    }
+
+    table tr td {
+      width: clamp(80px, 15vw, 120px);
+      height: clamp(80px, 15vw, 120px);
+      text-align: center;
+      font-size: clamp(40px, 10vw, 70px);
+      font-weight: bold;
+      background: white;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid #ddd;
+    }
+
+    table tr td:hover {
+      background: #f0f8ff;
+      transform: scale(1.05);
+      border-color: #4CAF50;
+    }
+
+    table tr td.x {
+      color: #e74c3c;
+    }
+
+    table tr td.o {
+      color: #3498db;
+    }
+
+    .winner {
+      background: #4CAF50 !important;
+      color: white !important;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.1);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .reset-btn {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background 0.3s;
+    }
+
+    .reset-btn:hover {
+      background: #45a049;
+    }
+
+    /* Fireworks canvas */
+    #fireworks {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="fireworks"></canvas>
+
+  <div class="game-container">
+    <h1> Tic Tac Toe</h1>
+    <div class="status"></div>
+    <div class="hint">Player X's turn - Click any cell to play!</div>
+
+    <table>
+      <tr>
+        <td data-index="0"></td>
+        <td data-index="1"></td>
+        <td data-index="2"></td>
+      </tr>
+      <tr>
+        <td data-index="3"></td>
+        <td data-index="4"></td>
+        <td data-index="5"></td>
+      </tr>
+      <tr>
+        <td data-index="6"></td>
+        <td data-index="7"></td>
+        <td data-index="8"></td>
+      </tr>
+    </table>
+
+    <button class="reset-btn" onclick="resetGame()"> New Game</button>
+  </div>
+
+  <audio id="turn-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-video-game-mystery-alert-234.wav"></audio>
+  <audio id="win-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.wav"></audio>
+  <audio id="draw-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-notification-212.wav"></audio>
+
+  <script>
+    $(document).ready(function () {
+      let turn = 1; // 1 for X, 2 for O
+      let gameState = Array(9).fill(0);
+      let winState = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+      ];
+      let mode = 1;
+      const turnSound = $('#turn-sound')[0];
+      const winSound = $('#win-sound')[0];
+      const drawSound = $('#draw-sound')[0];
+      const hint = $('.hint');
+      const status = $('.status');
+
+      $('td').each(function (i, e) {
+        $(e).click(function () {
+          if (mode === 2 || gameState[i] !== 0) return;
+          if (turn === 1) {
+            $(e).html('X').addClass('x');
+            gameState[i] = 1;
+            turnSound.play();
+            turn = 2;
+            hint.text("Player O's turn");
+          } else {
+            $(e).html('O').addClass('o');
+            gameState[i] = 2;
+            turnSound.play();
+            turn = 1;
+            hint.text("Player X's turn");
+          }
+
+          let winner = 0;
+          for (let pos of winState) {
+            if (gameState[pos[0]] === gameState[pos[1]] && gameState[pos[1]] === gameState[pos[2]] && gameState[pos[0]] !== 0) {
+              winner = gameState[pos[0]];
+              $(pos.map(p => `td[data-index='${p}']`).join(',')).addClass('winner');
+              mode = 2;
+              break;
+            }
+          }
+
+          if (winner === 1) {
+            status.text(" Player X Wins!");
+            hint.text("Tap New Game to play again!");
+            winSound.play();
+            launchFireworks();
+          } else if (winner === 2) {
+            status.text(" Player O Wins!");
+            hint.text("Tap  New Game to play again!");
+            winSound.play();
+            launchFireworks();
+          } else if (!gameState.includes(0)) {
+            status.text(" Game Draw!");
+            hint.text("Tap  New Game to play again!");
+            drawSound.play();
+          }
+        });
+      });
+
+      window.resetGame = function () {
+        $('td').html('').removeClass('x o winner');
+        gameState = Array(9).fill(0);
+        turn = 1;
+        mode = 1;
+        hint.text("Player X's turn - Click any cell to play!");
+        status.text('');
+      };
+
+      // Fireworks animation
+      const canvas = document.getElementById('fireworks');
+      const ctx = canvas.getContext('2d');
+      let particles = [];
+
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas();
+
+      function launchFireworks() {
+        particles = [];
+        for (let i = 0; i < 100; i++) {
+          particles.push({
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            dx: (Math.random() - 0.5) * 8,
+            dy: (Math.random() - 0.5) * 8,
+            color: `hsl(${Math.random() * 360}, 100%, 60%)`,
+            life: 100
+          });
+        }
+        animateFireworks();
+      }
+
+      function animateFireworks() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.fill();
+          p.x += p.dx;
+          p.y += p.dy;
+          p.dy += 0.05;
+          p.life--;
+        });
+        particles = particles.filter(p => p.life > 0);
+        if (particles.length > 0) requestAnimationFrame(animateFireworks);
+      }
+    });
+  </script>
+</body>
+
+</html>

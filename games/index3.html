@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            border-radius: 15px;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        table {
+            width: 400px;
+            height: 400px;
+            margin: 30px auto;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        table tr td {
+            width: 100px;
+            height: 100px;
+            border: 2px solid #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        table tr td:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: all 0.3s ease;
+        }
+
+        .selected {
+            outline: 4px solid #ff6b6b !important;
+            outline-offset: -4px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                outline-color: #ff6b6b;
+            }
+
+            50% {
+                outline-color: #feca57;
+            }
+
+            100% {
+                outline-color: #ff6b6b;
+            }
+        }
+
+        .win-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .win-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: bounceIn 0.8s ease;
+        }
+
+        .win-title {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .win-message {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+
+        .play-again-btn {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .play-again-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .refresh-btn {
+            background: linear-gradient(45deg, #48dbfb, #0abde3);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 1em;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ff6b6b;
+            animation: confetti-fall 3s linear infinite;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: translate(-50%, -50%) scale(0.3);
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+            }
+
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🧩 Puzzle Master</h1>
+        <div class="game-info">
+            <div class="info-item">
+                <span>🎯 Moves:</span>
+                <span id="move">15</span>
+            </div>
+            <div class="info-item">
+                <span>⏱️ Time:</span>
+                <span id="timer">01:00</span>
+            </div>
+            <button class="refresh-btn" onclick="location.reload()">🔄 Refresh</button>
+        </div>
+
+        <table>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="win-modal" id="winModal">
+        <div class="win-content">
+            <div class="win-title">🎉 Congratulations! 🎉</div>
+            <div class="win-message">You solved the puzzle!</div>
+            <div class="win-stats">
+                <p>Moves used: <span id="finalMoves"></span></p>
+                <p>Time taken: <span id="finalTime"></span></p>
+            </div>
+            <button class="play-again-btn" onclick="location.reload()">Play Again</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+        const folder = "puzle-image/";
+        const original_images = [
+            "puzzle_pic2_r1_c1_processed_by_imagy.jpg",
+            "puzzle_pic2_r1_c2_processed_by_imagy.jpg",
+            "puzzle_pic2_r1_c3_processed_by_imagy.jpg",
+            "puzzle_pic2_r1_c4_processed_by_imagy.jpg",
+            "puzzle_pic2_r2_c1_processed_by_imagy.jpg",
+            "puzzle_pic2_r2_c2_processed_by_imagy.jpg",
+            "puzzle_pic2_r2_c3_processed_by_imagy.jpg",
+            "puzzle_pic2_r2_c4_processed_by_imagy.jpg",
+            "puzzle_pic2_r3_c1_processed_by_imagy.jpg",
+            "puzzle_pic2_r3_c2_processed_by_imagy.jpg",
+            "puzzle_pic2_r3_c3_processed_by_imagy.jpg",
+            "puzzle_pic2_r3_c4_processed_by_imagy.jpg",
+            "puzzle_pic2_r4_c1_processed_by_imagy.jpg",
+            "puzzle_pic2_r4_c2_processed_by_imagy.jpg",
+            "puzzle_pic2_r4_c3_processed_by_imagy.jpg",
+            "puzzle_pic2_r4_c4_processed_by_imagy.jpg"
+        ];
+        const game_images = [
+            "puzzle_pic2_r3_c4_processed_by_imagy.jpg",
+            "puzzle_pic2_r4_c1_processed_by_imagy.jpg",
+            "puzzle_pic2_r4_c2_processed_by_imagy.jpg",
+            "puzzle_pic2_r4_c4_processed_by_imagy.jpg",
+            "puzzle_pic2_r2_c1_processed_by_imagy.jpg",
+            "puzzle_pic2_r2_c2_processed_by_imagy.jpg",
+            "puzzle_pic2_r1_c1_processed_by_imagy.jpg",
+            "puzzle_pic2_r1_c2_processed_by_imagy.jpg",
+            "puzzle_pic2_r3_c1_processed_by_imagy.jpg",
+            "puzzle_pic2_r1_c3_processed_by_imagy.jpg",
+            "puzzle_pic2_r1_c4_processed_by_imagy.jpg",
+            "puzzle_pic2_r3_c2_processed_by_imagy.jpg",
+            "puzzle_pic2_r3_c3_processed_by_imagy.jpg",
+            "puzzle_pic2_r2_c3_processed_by_imagy.jpg",
+            "puzzle_pic2_r2_c4_processed_by_imagy.jpg",
+            "puzzle_pic2_r4_c3_processed_by_imagy.jpg",
+        ]
+
+        $(document).ready(function () {
+
+            var first_click = -1;
+            var second_click = -1;
+            var available_move = 15;
+            var seconds = 60;
+            var timer_interval;
+            var start_time = Date.now();
+
+            $("#move").html(available_move);
+
+            // Start timer
+            timer_interval = setInterval(function () {
+                seconds--;
+                var minutes = Math.floor(seconds / 60);
+                var secs = seconds % 60;
+                $("#timer").html(String(minutes).padStart(2, '0') + ":" + String(secs).padStart(2, '0'));
+
+                if (seconds <= 0) {
+                    clearInterval(timer_interval);
+                    alert("Time's up! Game Over!");
+                    location.reload();
+                }
+            }, 1000);
+
+            // Check if puzzle is solved
+            function checkWin() {
+                var current_order = [];
+                $("td").each(function (i) {
+                    var img_src = $(this).find('img').attr('src');
+                    var img_name = img_src.split('/').pop();
+                    current_order.push(img_name);
+                });
+
+                var is_solved = true;
+                for (var i = 0; i < original_images.length; i++) {
+                    if (current_order[i] !== original_images[i]) {
+                        is_solved = false;
+                        break;
+                    }
+                }
+
+                if (is_solved) {
+                    clearInterval(timer_interval);
+                    showWinModal();
+                }
+            }
+
+            function showWinModal() {
+                var elapsed_time = Math.floor((Date.now() - start_time) / 1000);
+                var minutes = Math.floor(elapsed_time / 60);
+                var secs = elapsed_time % 60;
+
+                $("#finalMoves").text(15 - available_move);
+                $("#finalTime").text(String(minutes).padStart(2, '0') + ":" + String(secs).padStart(2, '0'));
+
+                createConfetti();
+                $("#winModal").fadeIn();
+            }
+
+            function createConfetti() {
+                for (var i = 0; i < 50; i++) {
+                    var confetti = $("<div class='confetti'></div>");
+                    confetti.css({
+                        left: Math.random() * 100 + "%",
+                        backgroundColor: ["#ff6b6b", "#feca57", "#48dbfb", "#ff9ff3", "#54a0ff"][Math.floor(Math.random() * 5)],
+                        animationDelay: Math.random() * 3 + "s",
+                        animationDuration: (Math.random() * 3 + 2) + "s"
+                    });
+                    $("body").append(confetti);
+
+                    setTimeout(function () {
+                        confetti.remove();
+                    }, 6000);
+                }
+            }
+
+            $("td").each(function (i, e) {
+
+                // display game default/random images for first time 
+                $(e).html(`
+                    <img src="${folder + game_images[i]}" />
+                `)
+
+                // handle click
+                $(e).click(function () {
+
+                    // check available moves
+                    if (available_move == 0) {
+                        alert("No Moves Available")
+                    }
+
+                    if (first_click < 0 && second_click < 0 && available_move > 0) {
+                        // this is first image image selection
+                        first_click = i;
+                        // set highlight for box selection
+                        $(e).addClass("selected");
+                    }
+                    else if (first_click >= 0 && second_click < 0 && available_move > 0) {
+                        // this is second image selection 
+                        second_click = i;
+                        // set highlight for box selection
+                        $(e).addClass("selected");
+
+                        // get the current image in both box
+                        var box1 = $("td").eq(first_click).html();
+                        var box2 = $("td").eq(second_click).html();
+
+                        // swap both image with animation
+                        setTimeout(function () {
+                            $("td").eq(first_click).html(box2);
+                            $("td").eq(second_click).html(box1);
+
+                            // remove highlight
+                            $("td").eq(first_click).removeClass("selected");
+                            $("td").eq(second_click).removeClass("selected");
+
+                            // set click to default for next move 
+                            first_click = -1;
+                            second_click = -1;
+
+                            // manage available move
+                            available_move = available_move - 1;
+                            $("#move").html(available_move);
+
+                            // check if puzzle is solved
+                            checkWin();
+                        }, 300);
+                    }
+
+
+                })
+
+
+
+            })
+
+        });
+
+    </script>
+
+
+</body>
+
+</html>

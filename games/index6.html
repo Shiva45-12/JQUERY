@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIC_TOC_TOE</title>
+    <!-- jqury min js file -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- taiwindcss -->
+    <!--<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>-->
+
+    <!-- styling -->
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: clamp(24px, 5vw, 36px);
+        }
+
+        .status {
+            font-size: clamp(16px, 4vw, 20px);
+            font-weight: bold;
+            margin-bottom: 20px;
+            min-height: 30px;
+            color: #555;
+        }
+
+        .hint {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: clamp(14px, 3vw, 16px);
+        }
+
+        table {
+            margin: 0 auto;
+            border-collapse: separate;
+            border-spacing: 5px;
+            background: #f5f5f5;
+            border-radius: 15px;
+            padding: 10px;
+        }
+
+        table tr td {
+            width: clamp(80px, 15vw, 120px);
+            height: clamp(80px, 15vw, 120px);
+            text-align: center;
+            font-size: clamp(40px, 10vw, 70px);
+            font-weight: bold;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #ddd;
+        }
+
+        table tr td:hover {
+            background: #f0f8ff;
+            transform: scale(1.05);
+            border-color: #4CAF50;
+        }
+
+        table tr td.x {
+            color: #e74c3c;
+        }
+
+        table tr td.o {
+            color: #3498db;
+        }
+
+        .winner {
+            background: #4CAF50 !important;
+            color: white !important;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .reset-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+
+        .reset-btn:hover {
+            background: #45a049;
+        }
+
+        @media (max-width: 480px) {
+            .game-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            table {
+                border-spacing: 3px;
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="game-container">
+        <h1>🎮 Tic Tac Toe</h1>
+        <div class="status"></div>
+        <div class="hint">Player X's turn - Click any cell to play!</div>
+        
+        <table>
+            <tr>
+                <td data-index="0"></td>
+                <td data-index="1"></td>
+                <td data-index="2"></td>
+            </tr>
+            <tr>
+                <td data-index="3"></td>
+                <td data-index="4"></td>
+                <td data-index="5"></td>
+            </tr>
+            <tr>
+                <td data-index="6"></td>
+                <td data-index="7"></td>
+                <td data-index="8"></td>
+            </tr>
+        </table>
+        
+        <button class="reset-btn" onclick="resetGame()">🔄 New Game</button>
+    </div>
+
+
+
+    <!--script-->
+
+    <script>
+        let audioContext;
+        let audioEnabled = false;
+
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            audioEnabled = true;
+        }
+
+        function playSound(freq, duration) {
+            if (!audioEnabled) return;
+            try {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration/1000);
+                osc.start();
+                osc.stop(audioContext.currentTime + duration/1000);
+            } catch(e) {
+                console.log('Audio not supported');
+            }
+        }
+
+        function showCrackers() {
+            for(let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const cracker = $('<div>🎉</div>').css({
+                        position: 'fixed',
+                        left: Math.random() * window.innerWidth + 'px',
+                        top: Math.random() * window.innerHeight + 'px',
+                        fontSize: '30px',
+                        zIndex: 1000,
+                        animation: 'fadeOut 2s forwards'
+                    });
+                    $('body').append(cracker);
+                    setTimeout(() => cracker.remove(), 2000);
+                }, i * 100);
+            }
+        }
+
+        function resetGame() {
+            gameState = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+            turn = 1;
+            mode = 1;
+            $('td').html('').removeClass('x o winner');
+            $('.status').html('');
+            $('.hint').html("Player X's turn - Click any cell to play!");
+        }
+
+        $(document).ready(function () {
+            var turn = 1;
+            var gameState = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+            var winState = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+            var mode = 1;
+
+            $('td').each(function (i, e) {
+                $(e).click(function () {
+                    if (!audioEnabled) initAudio();
+                    if (gameState[i] == 0 && mode == 1) {
+                        playSound(turn == 1 ? 440 : 330, 200);
+                        
+                        if (turn == 1) {
+                            $(e).html('X').addClass('x');
+                            gameState[i] = 1;
+                            turn = 2;
+                            $('.hint').html("Player O's turn - Your move!");
+                        } else {
+                            $(e).html('O').addClass('o');
+                            gameState[i] = 2;
+                            turn = 1;
+                            $('.hint').html("Player X's turn - Your move!");
+                        }
+
+                        var winner = 0;
+                        var winPos = [];
+
+                        for (var pos of winState) {
+                            if (gameState[pos[0]] == gameState[pos[1]] && 
+                                gameState[pos[1]] == gameState[pos[2]] && 
+                                gameState[pos[0]] != 0) {
+                                winner = gameState[pos[0]];
+                                winPos = pos;
+                                mode = 2;
+                                break;
+                            }
+                        }
+
+                        if (winner == 1) {
+                            $('.status').html('🎉 X Player WON! 🎉');
+                            $('.hint').html('Congratulations! Click New Game to play again.');
+                            winPos.forEach(idx => $(`td[data-index="${idx}"]`).addClass('winner'));
+                            showCrackers();
+                            setTimeout(() => playSound(523, 300), 100);
+                            setTimeout(() => playSound(659, 300), 200);
+                            setTimeout(() => playSound(784, 400), 300);
+                        } else if (winner == 2) {
+                            $('.status').html('🎉 O Player WON! 🎉');
+                            $('.hint').html('Congratulations! Click New Game to play again.');
+                            winPos.forEach(idx => $(`td[data-index="${idx}"]`).addClass('winner'));
+                            showCrackers();
+                            setTimeout(() => playSound(523, 300), 100);
+                            setTimeout(() => playSound(659, 300), 200);
+                            setTimeout(() => playSound(784, 400), 300);
+                        } else if (!gameState.includes(0)) {
+                            $('.status').html('🤝 GAME DRAW! 🤝');
+                            $('.hint').html('Good game! Click New Game to try again.');
+                            setTimeout(() => playSound(200, 400), 100);
+                            setTimeout(() => playSound(150, 400), 300);
+                        }
+                    }
+                });
+            });
+
+            $('<style>@keyframes fadeOut { to { opacity: 0; transform: translateY(-50px); } }</style>').appendTo('head');
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+
+.box{
+            width:100px;
+            height:100px;
+            padding:10px;
+            margin:10px;
+            border: 5px solid red;
+            background-color: yellow;
+        }
+    </style>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <script>
+        $(document).ready(function(){
+            $('#btn1').click(function(){
+                var a=$('.box').height();
+                console.log(a);
+                var b=$('.box').innerHeight();  //padding height
+                console.log(b);
+                var c=$('.box').outerHeight();   //border height
+                console.log(c);
+                var d=$('.box').outerHeight(true);   // margin and border height
+                console.log(d);
+                
+                
+            })
+        })
+    </script>
+
+</head>
+<body>
+    <div class="box">Hello</div>
+    <button id="btn1">Click here</button>
+</body>
+</html>

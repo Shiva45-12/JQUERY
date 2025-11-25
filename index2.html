@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>getter</title>
+</head>
+<body>
+    
+    <p id="para1">jQuery</p>
+    <button id="btn1">click me</button>
+    <input type="password" id="t1" placeholder='Enter Password'>
+    <input type="checkbox" id="t2">
+
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+
+        <script>
+            $(document).ready(function(){
+                $("#btn1").click(function(){
+                $("#para1").html("digicoder")
+
+                let a= $("#para1").html();
+                console.log(a);
+                
+                $("#t1").attr("placeholder","enter name");
+                
+                })
+
+                $('#t2').change(function(){
+                    let a = $(this).prop("checked");
+                if(a==true){
+                    $('#t1').attr('type','text')
+                }
+                else{
+                    $('#t1').attr('type','password')
+                }
+                })
+
+            })
+        </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <!-- tailwindcss -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <!-- jquery linked -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <script>
+
+        // jQuery(document).ready(function(){
+        $(document).ready(() => {
+            // alert('hello this is jquery')
+
+            $("button").click(() => {
+                // alert("clicked")
+                $("h1").css("color", "red");
+                $("h1").html("DigiCoders");
+                $("button").removeClass("bg-red-500").addClass("bg-blue-500");
+
+            })
+
+            $("body").ready(()=>{
+                $("body").css("font-family","fantasy")
+            })
+
+        })
+    </script>
+</head>
+
+<body class="text-center">
+
+    <h1 class="text-4xl mx-5 font-bold mt-10 tracking-[5px]  leading-10">Welcome To jQuery</h1>
+    <button class="bg-red-500 py-2 px-5 text-xl rounded-lg mx-5 mt-2 font-semibold text-white">Click me</button>
+
+</body>
+
+</html>

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User VS Computer Game</title>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: clamp(24px, 5vw, 36px);
+        }
+
+        h2 {
+            font-size: clamp(16px, 4vw, 20px);
+            font-weight: bold;
+            margin-bottom: 20px;
+            min-height: 30px;
+            color: #555;
+        }
+
+        .status {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: clamp(14px, 3vw, 16px);
+        }
+
+        table {
+            margin: 0 auto;
+            border-collapse: separate;
+            border-spacing: 5px;
+            background: #f5f5f5;
+            border-radius: 15px;
+            padding: 10px;
+        }
+
+        table tr td {
+            width: clamp(80px, 15vw, 120px);
+            height: clamp(80px, 15vw, 120px);
+            text-align: center;
+            font-size: clamp(40px, 10vw, 70px);
+            font-weight: bold;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #ddd;
+        }
+
+        table tr td:hover {
+            background: #f0f8ff;
+            transform: scale(1.05);
+            border-color: #4CAF50;
+        }
+
+        table tr td.x {
+            color: #e74c3c;
+        }
+
+        table tr td.o {
+            color: #3498db;
+        }
+
+        .winner {
+            background: #4CAF50 !important;
+            color: white !important;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .reset-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+
+        .reset-btn:hover {
+            background: #45a049;
+        }
+
+        .choice-container {
+            background: #fff3e0;
+            border: 2px solid #ff9800;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .choice-btn {
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.3s;
+        }
+
+        .choice-btn:hover {
+            background: #f57c00;
+            transform: scale(1.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .game-container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            table {
+                border-spacing: 3px;
+                padding: 8px;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="game-container">
+        <h1>Users vs Computer</h1>
+        <h2></h2>
+
+        <div class="choice-container" id="choiceContainer">
+            <div style="margin-bottom: 15px; font-size: 18px; font-weight: bold;">Choose your symbol:</div>
+            <button class="choice-btn" onclick="startGame('X')">X</button>
+            <button class="choice-btn" onclick="startGame('O')">O</button>
+        </div>
+
+        <div class="status hidden" id="statusDiv">Choose X or O to start!</div>
+
+        <table class="hidden" id="gameTable">
+            <tr>
+                <td data-index="0"></td>
+                <td data-index="1"></td>
+                <td data-index="2"></td>
+            </tr>
+            <tr>
+                <td data-index="3"></td>
+                <td data-index="4"></td>
+                <td data-index="5"></td>
+            </tr>
+            <tr>
+                <td data-index="6"></td>
+                <td data-index="7"></td>
+                <td data-index="8"></td>
+            </tr>
+        </table>
+
+        <button class="reset-btn hidden" id="resetBtn" onclick="resetGame()">🔄 New Game</button>
+    </div>
+
+
+
+    <script>
+
+        $(document).ready(() => {
+
+            var gameState = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+            var winState = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6]
+            ];
+            var mode = 1;
+
+            var playerSymbol = 'X';
+            var computerSymbol = 'O';
+            var playerValue = 1;
+            var computerValue = 2;
+
+            window.startGame = function (choice) {
+                playerSymbol = choice;
+                computerSymbol = choice === 'X' ? 'O' : 'X';
+                playerValue = choice === 'X' ? 1 : 2;
+                computerValue = choice === 'X' ? 2 : 1;
+
+                $('#choiceContainer').addClass('hidden');
+                $('#statusDiv').removeClass('hidden');
+                $('#gameTable').removeClass('hidden');
+                $('#resetBtn').removeClass('hidden');
+
+                $('#statusDiv').text('Computer starts first!');
+                setTimeout(() => {
+                    computerMove();
+                    $('#statusDiv').text('Your turn! Click any cell');
+                }, 1000);
+            };
+
+            $("td").each(function (i, e) {
+
+                $(e).click(function () {
+
+                    //console.log(i);
+                    if (gameState[i] == 0 && mode == 1) {
+                        $(e).html(playerSymbol).addClass(playerSymbol.toLowerCase());
+                        gameState[i] = playerValue;
+                        $('#statusDiv').text('Computer is thinking...');
+
+                        if (!checkWinner()) {
+                            setTimeout(() => {
+                                computerMove();
+                                if (mode == 1) $('#statusDiv').text('Your turn! Click any cell');
+                            }, 800);
+                        }
+                    }
+
+                })
+            })
+
+            function checkWinner() {
+                var winner = 0;
+                for (var pos of winState) {
+                    if (gameState[pos[0]] == gameState[pos[1]] && gameState[pos[1]] == gameState[pos[2]] && gameState[pos[0]] != 0) {
+                        winner = gameState[pos[0]];
+                        mode = 0
+                        break;
+                    }
+                }
+
+                if (winner == playerValue) {
+                    $("h2").html(" You Won! ");
+                    for (var pos of winState) {
+                        if (gameState[pos[0]] == gameState[pos[1]] && gameState[pos[1]] == gameState[pos[2]] && gameState[pos[0]] == playerValue) {
+                            pos.forEach(idx => $(`td[data-index="${idx}"]`).addClass('winner'));
+                            break;
+                        }
+                    }
+                    $('#statusDiv').text('Great job! Click New Game to play again');
+                    return true;
+                }
+                else if (winner == computerValue) {
+                    $("h2").html(" Computer Won! ");
+                    for (var pos of winState) {
+                        if (gameState[pos[0]] == gameState[pos[1]] && gameState[pos[1]] == gameState[pos[2]] && gameState[pos[0]] == computerValue) {
+                            pos.forEach(idx => $(`td[data-index="${idx}"]`).addClass('winner'));
+                            break;
+                        }
+                    }
+                    $('#statusDiv').text('Better luck next time! Try again');
+                    return true;
+                }
+                else {
+                    if (!gameState.includes(0)) {
+                        $("h2").html(" Game Draw! ");
+                        $('#statusDiv').text('Good game! Click New Game to try again');
+                        return true;
+                    }
+                }
+
+                return false;
+
+            }
+
+            function computerMove() {
+                var blankSpots = []
+                for (var i = 0; i < gameState.length; i++) {
+                    if (gameState[i] == 0) {
+                        blankSpots.push(i);
+                    }
+                }
+                // console.log(blankSpots);
+
+                if (checkPossibleMove() >= 0) {
+                    var position = checkPossibleMove();
+                    console.log(position);
+
+                } else {
+                    var spot = Math.floor(Math.random() * blankSpots.length);
+                    var position = blankSpots[spot];
+                }
+                checkPossibleMove();
+
+                // console.log(checkPossibleMove());
+
+
+                $('td').eq(position).html(computerSymbol).addClass(computerSymbol.toLowerCase());
+                gameState[position] = computerValue;
+
+                checkWinner();
+
+            }
+
+            function checkPossibleMove() {
+                // check computer winning
+
+                var possibleMove = -1;
+
+                for (var i = 0; i < gameState.length; i++) {
+                    if (gameState[i] == 0) {
+                        gameState[i] = 2;  // temporary move
+
+
+                        var winner = 0;
+                        for (var pos of winState) {
+                            if (gameState[pos[0]] == gameState[pos[1]] && gameState[pos[1]] == gameState[pos[2]] && gameState[pos[0]] == 2) {
+                                winner = gameState[pos[0]];
+                                break;
+                            }
+                        }
+
+                        if (winner == 2) {
+                            possibleMove = i;
+
+                        }
+
+                        gameState[i] = 0; // revert back
+
+
+                    }
+                }
+
+                if (possibleMove >= 0) {
+                    return possibleMove;
+                }
+
+                // check user winning
+
+                for (var i = 0; i < gameState.length; i++) {
+                    if (gameState[i] == 0) {
+                        gameState[i] = 1;  // temporary move
+
+
+                        var winner = 0;
+                        for (var pos of winState) {
+                            if (gameState[pos[0]] == gameState[pos[1]] && gameState[pos[1]] == gameState[pos[2]] && gameState[pos[0]] == 1) {
+                                winner = gameState[pos[0]];
+                                break;
+                            }
+                        }
+
+                        if (winner == 1) {
+                            possibleMove = i;
+
+                        }
+
+                        gameState[i] = 0; // revert back
+
+
+                    }
+                }
+
+                if (possibleMove >= 0) {
+                    return possibleMove;
+                }
+
+                // third priority for random move
+
+                return -1;
+            }
+
+            window.resetGame = function () {
+                $('td').html('').removeClass('x o winner');
+                gameState = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+                mode = 1;
+                $('h2').html('');
+                $('#choiceContainer').removeClass('hidden');
+                $('#statusDiv').addClass('hidden');
+                $('#gameTable').addClass('hidden');
+                $('#resetBtn').addClass('hidden');
+            };
+        })
+    </script>
+
+</body>
+
+</html>
